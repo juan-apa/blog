@@ -12,7 +12,7 @@ title: Blog
     {% for post in site.posts %}
     <li class="w-full">
       <a href="{{ post.url }}" class="flex justify-center flex flex-row hover:dark:bg-neutral-700">
-        <span class="px-4 py-2 w-1/5 w-[8.5rem]">{{ post.date | date: "%Y-%m-%d" }}</span>
+        <span class="px-4 py-2 w-1/5 min-w-[8.1rem]">{{ post.date | date: "%Y-%m-%d" }}</span>
         <span class="px-4 py-2 grow">{{ post.title }}</span>
       </a>
     </li>
