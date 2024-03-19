@@ -1,0 +1,19 @@
+url: "https://juan-apa.github.io"
+baseurl: ""
+title: "Juan Aparicio"
+twitter_username: "not_kombustor"
+github_username: "juan-apa"
+github_repo: "juan-apa/juan-apa.github.io"
+
+plugins:
+  - jekyll-postcss
+
+postcss:
+  cache: false
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'

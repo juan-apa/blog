@@ -1,0 +1,21 @@
+---
+layout: default
+title: Blog
+---
+
+<div class="w-full">
+  <ul class="flex justify-center flex flex-col divide-y divide-neutral-300 dark:divide-neutral-700">
+    <li class="flex justify-center flex flex-row w-full">
+      <span class="px-4 py-2 font-extralight w-[8.5rem]">date</span>
+      <span class="px-4 py-2 font-extralight grow">title</span>
+    </li>
+    {% for post in site.posts %}
+    <li class="w-full">
+      <a href="{{ post.url }}" class="flex justify-center flex flex-row hover:dark:bg-neutral-700">
+        <span class="px-4 py-2 w-1/5 w-[8.5rem]">{{ post.date | date: "%Y-%m-%d" }}</span>
+        <span class="px-4 py-2 grow">{{ post.title }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

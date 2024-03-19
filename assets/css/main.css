@@ -1,0 +1,30 @@
+---
+---
+@import 'syntax-highlight.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .prose code:before {
+    content: none;
+  }
+  .prose code:after {
+    content: none;
+  }
+}
+
+.prose-card {
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid theme('colors.neutral.200');
+}
+
+.profile-image {
+  border-radius: 6px;
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  display: inline-block;
+}
+

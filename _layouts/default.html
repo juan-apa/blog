@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}" class="dark">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>{{ page.title }} - {{ site.title }}</title>
+    <link rel="stylesheet" href="{{ "/assets/css/main.css" | relative_url }}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+    {% include favicon.html %}
+  </head>
+  <body class="dark:bg-neutral-800 dark:text-gray-100 bg-white text-gray-950 max-w-2xl m-auto font-mono min-h-screen flex flex-col">
+    {% include navbar.html %}
+
+    {{ content }}
+
+    {% include footer.html %}
+  </body>
+</html>
