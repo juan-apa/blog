@@ -1,12 +1,17 @@
-url: "https://juan-apa.github.io"
+domain: "juan-apa.xyz"
+url: "https://juan-apa.xyz"
 baseurl: ""
 title: "Juan Aparicio"
+description: "A Ruby and Rails developer's blog"
+
 twitter_username: "not_kombustor"
 github_username: "juan-apa"
 github_repo: "juan-apa/juan-apa.github.io"
+og_image: "/assets/images/og-image.png"
 
 plugins:
   - jekyll-postcss
+  - jekyll-url-metadata
 
 postcss:
   cache: false
