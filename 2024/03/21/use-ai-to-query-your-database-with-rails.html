@@ -68,8 +68,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 <h1 id="scenario">Scenario</h1>
-<p>You have a Rails app that has a large dataset of user generated content, and you want to allow users to query this data leveraging AI tools.
-However, a simple integration with OpenAI chat completions is not enough, because you want the users to be able to query the data that is already in your database.</p>
+<p>Suppose you have a Ruby on Rails app, where users write and post articles. You want to enable the users to ask questions about all the articles in the database, get a response, and links to the most relevant articles.</p>
+
+<p>Why not use Postgres full text search? Well, asking and answering questions is not the same as searching for keywords. Also, as good as full text search is, it is not as good as AI at understanding the meaning of the text. For example:</p>
+
+<p>If a user asks:</p>
+<blockquote>
+  <p>Are humans great?</p>
+</blockquote>
+
+<p>And the database contains articles that mention:</p>
+<blockquote>
+  <p>People are awesome</p>
+</blockquote>
+
+<p>Then full text search fails to find the article, because it does not understand that “humans” and “people” are the same thing. The only word they have in common is “are”, and that’s not enough to make a good match.</p>
 
 <h1 id="tools">Tools</h1>
 <ul>
