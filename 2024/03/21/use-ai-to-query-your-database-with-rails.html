@@ -89,31 +89,48 @@ However, a simple integration with OpenAI chat completions is not enough, becaus
 
 <p>Okay, that really explains what it does, but how does it even look like? How can we use it?</p>
 
-<p>An embedding is nothing more than a vector of floating point numbers that represents a text.</p>
+<p>An embedding is nothing more than a vector of floating point numbers that represents how a text scores (field) in different aspects (dimensions)</p>
 
-<p>Consider the following example:</p>
+<h3 id="example">Example</h3>
+<p>Given a method that given a text, it generates an embedding of 2 dimensions, where the first dimension represents how positive the text is, and the second dimension represents how much the text talks about cats.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># @param input [String]</span>
 <span class="c1"># @return [Array&lt;Float&gt;]</span>
 <span class="k">def</span> <span class="nf">create_embedding</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
-  <span class="no">OpenAI</span><span class="o">::</span><span class="no">Embeddings</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
-<span class="k">end</span>
+  <span class="k">if</span> <span class="n">input</span><span class="p">.</span><span class="nf">match?</span><span class="p">(</span><span class="sr">/(like|love)/</span><span class="p">)</span>
+    <span class="n">positive</span> <span class="o">=</span> <span class="mf">1.0</span>
+  <span class="k">else</span>
+    <span class="n">positive</span> <span class="o">=</span> <span class="mf">0.0</span>
+  <span class="k">end</span>
 
-<span class="n">create_embedding</span><span class="p">(</span><span class="s2">"I like cats"</span><span class="p">)</span> <span class="c1"># =&gt; [0.238, 0.839]</span>
+  <span class="k">if</span> <span class="n">input</span><span class="p">.</span><span class="nf">match?</span><span class="p">(</span><span class="sr">/(cats|cat|feline|furball)/</span><span class="p">)</span>
+    <span class="n">cats</span> <span class="o">=</span> <span class="mf">1.0</span>
+  <span class="k">else</span>
+    <span class="n">cats</span> <span class="o">=</span> <span class="mf">0.1</span>
+  <span class="k">end</span>
+
+  <span class="p">[</span><span class="n">positive</span><span class="p">,</span> <span class="n">cats</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">create_embedding</span><span class="p">(</span><span class="s2">"I like cats"</span><span class="p">)</span> <span class="c1"># =&gt; [1.0, 1.0]</span>
 </code></pre></div></div>
 
-<p>In this example, the string “I like cats” is transformed into a vector of 2 dimensions.
+<p>In this example, the string <code class="language-plaintext highlighter-rouge">"I like cats"</code> is transformed into a vector of 2 dimensions.
 If we were to create an embedding for the string <code class="language-plaintext highlighter-rouge">"I like dogs"</code>, we would get a different vector</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">create_embedding</span><span class="p">(</span><span class="s2">"I like dogs"</span><span class="p">)</span> <span class="c1"># =&gt; [0.248, 0.859]</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">create_embedding</span><span class="p">(</span><span class="s2">"I like dogs"</span><span class="p">)</span> <span class="c1"># =&gt; [1.0, 0.0]</span>
 </code></pre></div></div>
 
 <p>And if we were to create an embedding for a string with a very different meaning, we would get a very different vector</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">create_embedding</span><span class="p">(</span><span class="s2">"Mondays suck"</span><span class="p">)</span> <span class="c1"># =&gt; [0.938, 0.239]</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">create_embedding</span><span class="p">(</span><span class="s2">"Mondays suck"</span><span class="p">)</span> <span class="c1"># =&gt; [0.0, 0.0]</span>
 </code></pre></div></div>
 
-<p>Now that we have 3 embeddings/vectors, we can use plot them in a 2D space., to see how closely related they are.</p>
+<p>This is a very simple algorithm for creating embeddings that does not really use trained LLM’s, but it serves as a good example of what embeddings are and how they are generated.</p>
+
+<h2 id="calculating-the-similarity-between-embeddings">Calculating the similarity between embeddings</h2>
+
+<p>Now that we know how embeddings are generated, we can calculate the similarity between them.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'bundler/inline'</span>
 
@@ -141,7 +158,7 @@ If we were to create an embedding for the string <code class="language-plaintext
 
 <p>We can now see that the vectors for <code class="language-plaintext highlighter-rouge">"I like cats"</code> and <code class="language-plaintext highlighter-rouge">"I like dogs"</code> are very close to each other, while the vector for <code class="language-plaintext highlighter-rouge">"Mondays suck"</code> is very far from the other two.</p>
 
-<h2 id="calculating-the-similarity-between-embeddings">Calculating the similarity between embeddings</h2>
+<h2 id="calculating-the-similarity-between-embeddings-1">Calculating the similarity between embeddings</h2>
 <p>The way we can check if two embeddings are similar is by calculating the similarity between them. For doing this, we’ll use one of 2 methods: cosine similarity or euclidean distance.</p>
 
 <h3 id="cosine-similarity">Cosine similarity</h3>
@@ -218,11 +235,11 @@ If we were to create an embedding for the string <code class="language-plaintext
 <h2 id="openai-embeddings">OpenAi embeddings</h2>
 <p>OpenAI’s embeddings are a bit more complex than the simple example we’ve seen before, but the idea remains the same.</p>
 
-<p>OpenAI’s embeddings generated by the <code class="language-plaintext highlighter-rouge">text-embedding-ada-002</code> model are 1536 dimensions long, and they are generated using a model that has been trained on a large dataset of text.</p>
+<p>OpenAI’s embeddings generated by the <code class="language-plaintext highlighter-rouge">text-embedding-ada-002</code> model are <code class="language-plaintext highlighter-rouge">1536</code> dimensions long, and they are generated using a model that has been trained on a large dataset of text.</p>
 
 <p>Each dimension in the vector represents a different aspect of the text, and the value of the dimension represents the importance of that aspect in the text.</p>
 
-<p>However, the way we use the embeddings is the same as before, we will be sending a text to the OpenAI API, and we will receive a 1536 dimensions long vector. After that, we can calculate the similarity between the vectors using the cosine similarity or the euclidean distance by using Postgres pgvector extension’s methods.</p>
+<p>However, the way we use the embeddings is the same as before, we will be sending a text to the OpenAI API, and it will return a <code class="language-plaintext highlighter-rouge">1536</code> dimensions long vector. After that, we can calculate the similarity between the vectors using the cosine similarity or the euclidean distance by using Postgres pgvector extension’s methods.</p>
 
 <h1 id="show-me-the-code">Show me the code</h1>
 <p>Now that we have a basic understanding of what embeddings are and how to calculate the similarity between them, let’s move on to the implementation.</p>
