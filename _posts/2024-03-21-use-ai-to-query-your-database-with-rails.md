@@ -6,8 +6,17 @@ author: Juan Aparicio
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 # Scenario
-You have a Rails app that has a large dataset of user generated content, and you want to allow users to query this data leveraging AI tools.
-However, a simple integration with OpenAI chat completions is not enough, because you want the users to be able to query the data that is already in your database.
+Suppose you have a Ruby on Rails app, where users write and post articles. You want to enable the users to ask questions about all the articles in the database, get a response, and links to the most relevant articles.
+
+Why not use Postgres full text search? Well, asking and answering questions is not the same as searching for keywords. Also, as good as full text search is, it is not as good as AI at understanding the meaning of the text. For example:
+
+If a user asks:
+>Are humans great?
+
+And the database contains articles that mention:
+> People are awesome
+
+Then full text search fails to find the article, because it does not understand that "humans" and "people" are the same thing. The only word they have in common is "are", and that's not enough to make a good match.
 
 # Tools
 - Ruby on Rails, it does not matter if it is an api only or a full stack app.
@@ -51,7 +60,7 @@ def create_embedding(input)
   if input.match?(/(cats|cat|feline|furball)/)
     cats = 1.0
   else
-    cats = 0.1
+    cats = 0.0
   end
 
   [positive, cats]
