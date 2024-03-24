@@ -314,21 +314,19 @@ rails db:migrate
     <span class="vi">@api_key</span> <span class="o">=</span> <span class="n">api_key</span>
   <span class="k">end</span>
 
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">get</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-    <span class="n">new</span><span class="p">(</span><span class="no">ENV</span><span class="p">[</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">]).</span><span class="nf">get</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">new</span><span class="p">(</span><span class="no">ENV</span><span class="p">[</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">]).</span><span class="nf">call</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
   <span class="k">end</span>
 
-  <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">post</span><span class="p">(</span>
-      <span class="s2">"https://api.openai.com/v1/embeddings"</span><span class="p">,</span>
-      <span class="ss">body: </span><span class="p">{</span>
+      <span class="no">URI</span><span class="p">(</span><span class="s2">"https://api.openai.com/v1/embeddings"</span><span class="p">),</span>
+      <span class="p">{</span>
         <span class="ss">input: </span><span class="n">text</span><span class="p">,</span>
         <span class="ss">model: </span><span class="s2">"text-embedding-ada-002"</span>
       <span class="p">}.</span><span class="nf">to_json</span><span class="p">,</span>
-      <span class="ss">headers: </span><span class="p">{</span>
-        <span class="s2">"Authorization"</span> <span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="vi">@api_key</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-        <span class="s2">"Content-Type"</span> <span class="o">=&gt;</span> <span class="s2">"application/json"</span>
-      <span class="p">}</span>
+      <span class="s2">"Authorization"</span> <span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="vi">@api_key</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+      <span class="s2">"Content-Type"</span> <span class="o">=&gt;</span> <span class="s2">"application/json"</span>
     <span class="p">)</span>
 
     <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="nf">body</span><span class="p">)[</span><span class="s2">"data"</span><span class="p">].</span><span class="nf">first</span><span class="p">[</span><span class="s2">"embedding"</span><span class="p">]</span>
@@ -373,7 +371,7 @@ rails db:migrate
   <span class="k">def</span> <span class="nf">create_embedding</span>
     <span class="n">embedding</span> <span class="o">=</span> <span class="no">Embedding</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span>
       <span class="ss">embeddable: </span><span class="nb">self</span><span class="p">,</span>
-      <span class="ss">vector: </span><span class="n">embedding_generator</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">embedding_text</span><span class="p">)</span>
+      <span class="ss">vector: </span><span class="n">embedding_generator</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">embedding_text</span><span class="p">)</span>
     <span class="p">)</span>
   <span class="k">end</span>
 
@@ -394,7 +392,7 @@ rails db:migrate
 <span class="k">class</span> <span class="nc">SearchController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
   <span class="k">def</span> <span class="nf">index</span>
     <span class="n">query</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">]</span>
-    <span class="n">embedding</span> <span class="o">=</span> <span class="no">OpenAi</span><span class="o">::</span><span class="no">Embeddings</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">embedding</span> <span class="o">=</span> <span class="no">OpenAi</span><span class="o">::</span><span class="no">Embeddings</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
     <span class="n">embeddings</span> <span class="o">=</span> <span class="no">Embedding</span><span class="p">.</span><span class="nf">nearest_neighbor</span><span class="p">(</span><span class="ss">:vector</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="ss">distance: </span><span class="s1">'cosine'</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="n">embeddings_limit</span><span class="p">)</span>
     <span class="vi">@results</span> <span class="o">=</span> <span class="n">embeddings</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:embeddable</span><span class="p">)</span>
 
@@ -427,25 +425,24 @@ To achieve this, you could use the <a href="https://platform.openai.com/docs/mod
     <span class="vi">@api_key</span> <span class="o">=</span> <span class="n">api_key</span>
   <span class="k">end</span>
 
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">ask</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="ss">context: </span><span class="s1">''</span><span class="p">)</span>
-    <span class="n">new</span><span class="p">(</span><span class="no">ENV</span><span class="p">[</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">]).</span><span class="nf">ask</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="ss">context: </span><span class="s1">''</span><span class="p">)</span>
+    <span class="n">new</span><span class="p">(</span><span class="no">ENV</span><span class="p">[</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">]).</span><span class="nf">call</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
   <span class="k">end</span>
 
-  <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="ss">context: </span><span class="s1">''</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span> <span class="ss">role: </span><span class="s1">'user'</span><span class="p">,</span> <span class="ss">content: </span><span class="n">prompt</span> <span class="p">}]</span>
-    <span class="n">messages</span> <span class="o">&lt;&lt;</span> <span class="p">{</span> <span class="ss">role: </span><span class="s1">'assistant'</span><span class="p">,</span> <span class="ss">content: </span><span class="n">context</span> <span class="p">}</span> <span class="k">if</span> <span class="n">context</span><span class="p">.</span><span class="nf">present?</span>
+    <span class="n">kwargs</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">role</span><span class="p">,</span> <span class="n">content</span><span class="o">|</span>
+      <span class="n">messages</span> <span class="o">&lt;&lt;</span> <span class="p">{</span> <span class="n">role</span><span class="p">:,</span> <span class="n">content</span><span class="p">:}</span>
+    <span class="k">end</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">post</span><span class="p">(</span>
-      <span class="s2">"https://api.openai.com/v1/chat/completions"</span><span class="p">,</span>
-      <span class="ss">body: </span><span class="p">{</span>
+      <span class="no">URI</span><span class="p">(</span><span class="s2">"https://api.openai.com/v1/chat/completions"</span><span class="p">),</span>
+      <span class="p">{</span>
         <span class="ss">model: </span><span class="s2">"gpt-3.5-turbo"</span><span class="p">,</span>
-        <span class="ss">prompt: </span><span class="n">prompt</span><span class="p">,</span>
-        <span class="ss">context: </span><span class="n">context</span>
-      <span class="p">}.</span><span class="nf">to_json</span><span class="p">,</span>
-      <span class="ss">headers: </span><span class="p">{</span>
-        <span class="s2">"Authorization "</span><span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="vi">@api_key</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-        <span class="s2">"Content-Type"</span> <span class="o">=&gt;</span> <span class="s2">"application/json"</span>
-      <span class="p">}</span>
+        <span class="ss">messages:
+      </span><span class="p">}.</span><span class="nf">to_json</span><span class="p">,</span>
+      <span class="s2">"Authorization "</span><span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="vi">@api_key</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+      <span class="s2">"Content-Type"</span> <span class="o">=&gt;</span> <span class="s2">"application/json"</span>
     <span class="p">)</span>
 
     <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="nf">body</span><span class="p">)[</span><span class="s2">"choices"</span><span class="p">].</span><span class="nf">first</span><span class="p">[</span><span class="s2">"message"</span><span class="p">][</span><span class="s2">"content"</span><span class="p">]</span>
@@ -472,7 +469,7 @@ To achieve this, you could use the <a href="https://platform.openai.com/docs/mod
     <span class="n">context</span> <span class="o">=</span> <span class="n">generate_context</span><span class="p">(</span><span class="vi">@results</span><span class="p">)</span>
 
     <span class="c1"># Ask OpenAI for a completion</span>
-    <span class="vi">@response</span> <span class="o">=</span> <span class="no">OpenAi</span><span class="o">::</span><span class="no">Completions</span><span class="p">.</span><span class="nf">ask</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
+    <span class="vi">@response</span> <span class="o">=</span> <span class="no">OpenAi</span><span class="o">::</span><span class="no">Completions</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="ss">system: </span><span class="n">context</span><span class="p">)</span>
 
     <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
       <span class="c1"># json response includes the results and the response</span>
