@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en-US" class="dark">
+  <head>
+    <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-M7WF9Z88');</script>
+<!-- End Google Tag Manager -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>Showcasing Ai Reviews Search In Rails - Juan Aparicio</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/syntax-highlight.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+    <link rel="favicon" href="/assets/images/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+<link rel="manifest" href="/assets/site.webmanifest">
+
+    <meta property="og:title" content="Showcasing Ai Reviews Search In Rails" />
+<meta property="og:description" content="A Ruby and Rails developer's blog" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://juan-apa.xyz/2024/03/22/showcasing-ai-reviews-search-in-rails.html" />
+
+<!-- twitter og tags -->
+<meta property="twitter:domain" content="juan-apa.xyz">
+<meta property="twitter:url" content="https://juan-apa.xyz/2024/03/22/showcasing-ai-reviews-search-in-rails.html">
+<meta name="twitter:title" content="Showcasing Ai Reviews Search In Rails">
+<meta name="twitter:description" content="A Ruby and Rails developer's blog">
+<meta name="twitter:card" content="summary_large_image">
+
+    <meta property="og:image" content="https://juan-apa.xyz/assets/og_images/2024-03-22-showcasing-ai-reviews-search-in-rails.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+  </head>
+  <body class="dark:bg-neutral-800 dark:text-gray-100 bg-white text-gray-950 max-w-2xl m-auto font-mono min-h-screen flex flex-col">
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M7WF9Z88"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+    <nav class="">
+  <ul class="flex p-4 h-full">
+    <li><a href="/" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2">Juan Aparicio</a></li>
+    <li class="grow"></li>
+    <li><a href="/blog" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2 underline underline-neutral-200">Blog</a></li>
+  </ul>
+</nav>
+
+
+    <header class="flex flex-col items-center justify-center py-16">
+      <h1 class="text-4xl font-bold text-center">Showcasing Ai Reviews Search In Rails</h1>
+      
+        <p class="text-neutral-500 text-lg mt-2">March 22, 2024</p>
+      
+    </header>
+
+
+    <div class="container mx-auto prose dark:prose-invert dark:text-gray-100 text-gray-950 pt-4 px-2 sm:px-0">
+      <p>In my <a href="/blog/2024-03-21-use-ai-to-query-your-database-with-rails">previous post</a> , I showedcased a way to build an AI search engine using Ruby On Rails.
+In this post I’ll be building a search engine for the <a href="https://www.kaggle.com/datasets/sujalsuthar/airlines-reviews?resource=download">Airlines Reviews dataset</a> using the same approach.</p>
+
+<p>I’ll guide you through the entire process, from cleaning-up the data, to seeding the database, and finally building the search engine UI.</p>
+
+<h2 id="cleaning-up-the-data">Cleaning-up the data</h2>
+<p>This is one of the most important steps when working with data. The dataset I’m using is a CSV file with the following columns:</p>
+<ul>
+  <li>Title</li>
+  <li>Name</li>
+  <li>Review Date</li>
+  <li>Airline</li>
+  <li>Verified</li>
+  <li>Reviews</li>
+  <li>Type of Traveller</li>
+  <li>Month Flown</li>
+  <li>Route</li>
+  <li>Class</li>
+  <li>Seat Comfort</li>
+  <li>Staff Service</li>
+  <li>Food &amp; Beverages</li>
+  <li>Inflight Entertainment</li>
+  <li>Value For Money</li>
+  <li>Overall Rating</li>
+  <li>Recommended</li>
+</ul>
+
+<p>For this tutorial, I’m only interested in the <code class="language-plaintext highlighter-rouge">Title</code>, <code class="language-plaintext highlighter-rouge">Reviews</code> and <code class="language-plaintext highlighter-rouge">Airline</code> columns. I’ll be using the <code class="language-plaintext highlighter-rouge">Title</code> and <code class="language-plaintext highlighter-rouge">Reviews</code> columns to build the search engine, and the <code class="language-plaintext highlighter-rouge">Airline</code> column to filter the results by airline.</p>
+
+<p>Because the data in the CSV file is sorted by Airline and then by Review Date, I’ll have to take a sample (200 rows) of each airline, to avoid having all the reviews of the same airline together.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+
+<span class="c1"># Replace 'your_file.csv' with the path to your CSV file
+</span><span class="n">file_path</span> <span class="o">=</span> <span class="sh">'</span><span class="s">airlines_reviews.csv</span><span class="sh">'</span>
+
+<span class="c1"># Load the CSV data into a pandas DataFrame
+</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+<span class="c1"># Normalize the 'Title' and 'Reviews' columns by removing double quotes
+# and trimming spaces at the beginning and the end
+</span><span class="n">df</span><span class="p">[</span><span class="sh">'</span><span class="s">Title</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="sh">'</span><span class="s">Title</span><span class="sh">'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sh">'"'</span><span class="p">,</span> <span class="sh">''</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="sh">'</span><span class="s">Reviews</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="sh">'</span><span class="s">Reviews</span><span class="sh">'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sh">'"'</span><span class="p">,</span> <span class="sh">''</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
+
+<span class="c1"># Normalize the Verified column by trimming spaces at the beginning and the end, and converting to lowercase
+</span><span class="n">df</span><span class="p">[</span><span class="sh">'</span><span class="s">Verified</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="sh">'</span><span class="s">Verified</span><span class="sh">'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">().</span><span class="nb">str</span><span class="p">.</span><span class="nf">lower</span><span class="p">()</span>
+
+<span class="c1"># Keep only rows where 'Verified' is TRUE
+</span><span class="n">df_verified</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="sh">'</span><span class="s">Verified</span><span class="sh">'</span><span class="p">]</span> <span class="o">==</span> <span class="sh">'</span><span class="s">true</span><span class="sh">'</span><span class="p">]</span>
+
+<span class="c1"># Keep only the 'Airline', 'Reviews', and 'Title' columns
+</span><span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df_verified</span><span class="p">[[</span><span class="sh">'</span><span class="s">Airline</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">Reviews</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">Title</span><span class="sh">'</span><span class="p">]]</span>
+
+<span class="c1"># Create an empty DataFrame to store the final result
+</span><span class="n">df_final</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sh">'</span><span class="s">Airline</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">Reviews</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">Title</span><span class="sh">'</span><span class="p">])</span>
+
+<span class="c1"># List of all possible values for Airline
+</span><span class="n">airlines</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sh">"</span><span class="s">Singapore Airlines</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Qatar Airways</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">All Nippon Airways</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Emirates</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Japan Airlines</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Turkish Airlines</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Air France</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Cathay Pacific Airways</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">EVA Air</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Korean Air</span><span class="sh">"</span>
+<span class="p">]</span>
+
+<span class="c1"># For each airline, select up to 200 most recent reviews and append to df_final
+</span><span class="k">for</span> <span class="n">airline</span> <span class="ow">in</span> <span class="n">airlines</span><span class="p">:</span>
+    <span class="n">df_airline</span> <span class="o">=</span> <span class="n">df_filtered</span><span class="p">[</span><span class="n">df_filtered</span><span class="p">[</span><span class="sh">'</span><span class="s">Airline</span><span class="sh">'</span><span class="p">]</span> <span class="o">==</span> <span class="n">airline</span><span class="p">].</span><span class="nf">head</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">df_final</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">concat</span><span class="p">([</span><span class="n">df_final</span><span class="p">,</span> <span class="n">df_airline</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Save the result to a new CSV file
+</span><span class="n">df_final</span><span class="p">.</span><span class="nf">to_csv</span><span class="p">(</span><span class="sh">'</span><span class="s">airline_reviews_sample.csv</span><span class="sh">'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Explanation of the code:</p>
+<ol>
+  <li>Load the CSV data into a pandas DataFrame.</li>
+  <li>Normalize the ‘Title’ and ‘Reviews’ columns by removing double quotes and trimming spaces at the beginning and the end.</li>
+  <li>Normalize the ‘Verified’ column by trimming spaces at the beginning and the end, and converting to lowercase.</li>
+  <li>Keep only rows where ‘Verified’ is TRUE.</li>
+  <li>Keep only the ‘Airline’, ‘Reviews’, and ‘Title’ columns.</li>
+  <li>Create an empty DataFrame to store the final result.</li>
+  <li>List of all possible values for Airline.</li>
+  <li>For each airline, select up to 200 most recent reviews and append to df_final.</li>
+  <li>Save the result to a new CSV file, called <code class="language-plaintext highlighter-rouge">airline_reviews_sample.csv</code>.</li>
+</ol>
+
+<h2 id="creating-the-rails-application">Creating the Rails application</h2>
+
+<p>To create a new Rails application, run the following command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails new airline_reviews_search <span class="nt">--database</span><span class="o">=</span>postgresql <span class="nt">--css</span><span class="o">=</span>tailwind <span class="nt">--javascript</span><span class="o">=</span>importmap <span class="nt">--asset-pipeline</span><span class="o">=</span>propshaft <span class="nt">--skip-jbuilder</span> <span class="nt">--skip-action-mailbox</span>
+</code></pre></div></div>
+
+<p>This command creates a new Rails application called <code class="language-plaintext highlighter-rouge">airline_reviews_search</code> with the following options:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">--database=postgresql</code>: Use PostgreSQL as the database.</li>
+  <li><code class="language-plaintext highlighter-rouge">--css=tailwind</code>: Use Tailwind CSS for styling.</li>
+  <li><code class="language-plaintext highlighter-rouge">--javascript=importmap</code>: Use import maps for JavaScript modules.</li>
+  <li><code class="language-plaintext highlighter-rouge">--asset-pipeline=propshaft</code>: Use Propshaft as the asset pipeline.</li>
+  <li><code class="language-plaintext highlighter-rouge">--skip-jbuilder</code>: Skip generating Jbuilder templates.</li>
+  <li><code class="language-plaintext highlighter-rouge">--skip-action-mailbox</code>: Skip generating Action Mailbox files.</li>
+</ul>
+
+<p>Change to the project directory:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>airline_reviews_search
+</code></pre></div></div>
+
+<p>As I mentioned in the previous post, I’ll be using the neighbor gem to get everything needed for looking up vectors, and get the necessary scopes for getting the most similar embeddings</p>
+
+<p><a href="https://formulae.brew.sh/formula/pgvector">Install the pgvector extension</a>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew <span class="nb">install </span>pgvector
+</code></pre></div></div>
+<p>(for guides on how to install in your specific platform, check the official <a href="https://github.com/pgvector/pgvector?tab=readme-ov-file#installation">pgvector documentation</a>)</p>
+
+<p>Add the neighbor gem to your Gemfile:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle add neighbor
+</code></pre></div></div>
+
+<p>Run the neighbor gem initiliazer:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails generate neighbor:vector
+rails db:migrate
+</code></pre></div></div>
+
+<h2 id="creating-the-rails-models">Creating the Rails models</h2>
+<p>For this example, we’ll keep it pretty simple. We just need:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Airline</code>: to store the airline name.</li>
+  <li><code class="language-plaintext highlighter-rouge">Review</code>: to store the review title and content.</li>
+  <li><code class="language-plaintext highlighter-rouge">Embedding</code>: to store the embeddings for the reviews.</li>
+</ul>
+
+<p>Initalize the database:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails db:create
+</code></pre></div></div>
+
+<p>Create a migration for enabling the pgvector extension:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g migration enable_pgvector
+</code></pre></div></div>
+
+<p>Add the following code to the migration file:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">EnablePgvector</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">6.1</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">enable_extension</span> <span class="s2">"vector"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Generate the models:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g model Airline name:string
+rails g model Review title:string body:text airline:references
+rails g model Embedding embedding:vector embeddable:references<span class="o">{</span>polymorphic<span class="o">}</span>:uniq
+</code></pre></div></div>
+
+<p>Add the following indexes:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">add_index</span> <span class="ss">:airlines</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">unique: </span><span class="kp">true</span>
+</code></pre></div></div>
+
+<p>Now the models should look like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Airline</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:reviews</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Review</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:airline</span>
+  <span class="n">has_one</span> <span class="ss">:embedding</span><span class="p">,</span> <span class="ss">as: :embeddable</span>
+
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Embedding</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_neighbor</span> <span class="ss">:vector</span>
+
+  <span class="n">belongs_to</span> <span class="ss">:embeddable</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="seeding-the-database">Seeding the database</h2>
+<p>Create a new file called <code class="language-plaintext highlighter-rouge">seeds.rb</code> in the <code class="language-plaintext highlighter-rouge">db</code> directory and add the following code:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'csv'</span>
+
+<span class="c1"># Load the CSV data into a hash</span>
+<span class="n">csv_path</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">'db'</span><span class="p">,</span> <span class="s1">'airline_reviews_sample.csv'</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="ss">headers: </span><span class="kp">true</span><span class="p">)</span>
+
+<span class="c1"># Create Airline records</span>
+<span class="n">airlines</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">row</span><span class="o">|</span> <span class="n">row</span><span class="p">[</span><span class="s1">'Airline'</span><span class="p">]</span> <span class="p">}.</span><span class="nf">uniq</span>
+
+<span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">transaction</span> <span class="k">do</span>
+  <span class="n">airlines</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span> <span class="no">Airline</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="nb">name</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="c1"># Create Review records</span>
+  <span class="n">data</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">row</span><span class="o">|</span>
+    <span class="n">airline</span> <span class="o">=</span> <span class="no">Airline</span><span class="p">.</span><span class="nf">find_by!</span><span class="p">(</span><span class="ss">name: </span><span class="n">row</span><span class="p">[</span><span class="s1">'Airline'</span><span class="p">])</span>
+    <span class="no">Review</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">title: </span><span class="n">row</span><span class="p">[</span><span class="s1">'Title'</span><span class="p">],</span> <span class="ss">body: </span><span class="n">row</span><span class="p">[</span><span class="s1">'Reviews'</span><span class="p">],</span> <span class="ss">airline: </span><span class="n">airline</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="generating-the-embeddings">Generating the Embeddings</h2>
+<p>We first need a service to generate the embeddings for the reviews:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/services/open_ai/create_embedding.rb</span>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+<span class="k">class</span> <span class="nc">OpenAi::CreateEmbedding</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">api_key</span><span class="p">)</span>
+    <span class="vi">@api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">new</span><span class="p">(</span><span class="no">ENV</span><span class="p">[</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">]).</span><span class="nf">call</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">post</span><span class="p">(</span>
+      <span class="no">URI</span><span class="p">(</span><span class="s2">"https://api.openai.com/v1/embeddings"</span><span class="p">),</span>
+      <span class="p">{</span>
+        <span class="ss">input: </span><span class="n">text</span><span class="p">,</span>
+        <span class="ss">model: </span><span class="s2">"text-embedding-ada-002"</span>
+      <span class="p">}.</span><span class="nf">to_json</span><span class="p">,</span>
+      <span class="s2">"Authorization"</span> <span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="vi">@api_key</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+      <span class="s2">"Content-Type"</span> <span class="o">=&gt;</span> <span class="s2">"application/json"</span>
+    <span class="p">)</span>
+
+    <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="nf">body</span><span class="p">)[</span><span class="s2">"data"</span><span class="p">].</span><span class="nf">first</span><span class="p">[</span><span class="s2">"embedding"</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<p>Add the dotenv gem to your Gemfile, so you can store the OpenAI API key in a <code class="language-plaintext highlighter-rouge">.env</code> file:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'dotenv-rails'</span><span class="p">,</span> <span class="ss">groups: </span><span class="p">[</span><span class="ss">:development</span><span class="p">,</span> <span class="ss">:test</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>Make sure to add the <code class="language-plaintext highlighter-rouge">OPENAI_API_KEY</code> to your <code class="language-plaintext highlighter-rouge">.env</code> file!</p>
+
+<p>Test the service by running the following code in the Rails console:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">review</span> <span class="o">=</span> <span class="no">Review</span><span class="p">.</span><span class="nf">first</span>
+<span class="n">vector</span> <span class="o">=</span> <span class="no">OpenAi</span><span class="o">::</span><span class="no">CreateEmbedding</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">review</span><span class="p">.</span><span class="nf">title</span><span class="si">}</span><span class="s2">  </span><span class="si">#{</span><span class="n">review</span><span class="p">.</span><span class="nf">body</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [0.123, 0.456, 0.789, ...]</span>
+<span class="n">vector</span><span class="p">.</span><span class="nf">size</span>
+<span class="c1"># =&gt; 1536</span>
+</code></pre></div></div>
+
+<h2 id="seeding-the-embeddings">Seeding the embeddings</h2>
+<p>First, create a method in the <code class="language-plaintext highlighter-rouge">Review</code> model to generate the content we want to embed:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/models/review.rb</span>
+<span class="k">class</span> <span class="nc">Review</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nf">embed_string</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="n">title</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">body</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, you can run the following code in the Rails console to seed the embeddings:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Review</span><span class="p">.</span><span class="nf">find_each</span> <span class="k">do</span> <span class="o">|</span><span class="n">review</span><span class="o">|</span>
+  <span class="n">embedding</span> <span class="o">=</span> <span class="no">OpenAi</span><span class="o">::</span><span class="no">CreateEmbedding</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">review</span><span class="p">.</span><span class="nf">embed_string</span><span class="p">)</span>
+  <span class="n">review</span><span class="p">.</span><span class="nf">create_embedding!</span><span class="p">(</span><span class="n">embedding</span><span class="p">:)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now sit back and relax, or go and prepare yourself a mate or a coffee, because this will take a while.</p>
+
+<h2 id="building-the-rails-controller-and-view">Building the Rails Controller and View</h2>
+
+<p>First, let’s create a controller to search the reviews</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/review_controller.rb</span>
+<span class="k">class</span> <span class="nc">ReviewsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@reviews</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">.</span><span class="nf">present?</span> <span class="p">?</span> <span class="n">reviews</span> <span class="p">:</span> <span class="no">Review</span><span class="p">.</span><span class="nf">none</span>
+    <span class="vi">@completions_response</span> <span class="o">=</span> <span class="vi">@reviews</span><span class="p">.</span><span class="nf">any?</span> <span class="p">?</span> <span class="n">completions_response</span> <span class="p">:</span> <span class="kp">nil</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+  <span class="k">def</span> <span class="nf">prompt</span>
+    <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">prompt_embedding</span>
+    <span class="no">OpenAi</span><span class="o">::</span><span class="no">CreateEmbedding</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">matching_embeddings</span>
+    <span class="k">if</span> <span class="n">prompt</span><span class="p">.</span><span class="nf">present?</span>
+      <span class="no">Embedding</span><span class="p">.</span><span class="nf">nearest_neighbors</span><span class="p">(</span><span class="ss">:embedding</span><span class="p">,</span> <span class="n">prompt_embedding</span><span class="p">,</span> <span class="ss">distance: :cosine</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="no">Embedding</span><span class="p">.</span><span class="nf">all</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">reviews</span>
+    <span class="n">embeddings</span> <span class="o">=</span> <span class="n">matching_embeddings</span>
+                          <span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">embeddable_type: </span><span class="s2">"Review"</span><span class="p">)</span>
+                          <span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+                          <span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:embeddable_id</span><span class="p">)</span>
+    <span class="no">Review</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">embeddings</span><span class="p">).</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:airline</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">completions_response</span>
+    <span class="nb">system</span> <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">PROMPT</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"  "</span><span class="p">)</span><span class="sh">
+    You are an AI that answers user submitted questions, based off of the reviews of airlines.
+    Here are the reviews:
+      </span><span class="si">#{</span> <span class="vi">@reviews</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="s2">"- </span><span class="si">#{</span><span class="n">_1</span><span class="p">.</span><span class="nf">airline</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">_1</span><span class="p">.</span><span class="nf">title</span><span class="si">}</span><span class="s2">; {_1.body}"</span> <span class="si">}</span><span class="sh">}
+</span><span class="no">    PROMPT</span>
+
+    <span class="no">OpenAi</span><span class="o">::</span><span class="no">Chat</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="nb">system</span><span class="p">:)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<p>How the controller works:</p>
+<ol>
+  <li>The <code class="language-plaintext highlighter-rouge">index</code> action gets the search query from the <code class="language-plaintext highlighter-rouge">params</code> hash.</li>
+  <li>The controller generates an embedding for the search query using the <code class="language-plaintext highlighter-rouge">OpenAi::CreateEmbedding</code> service.</li>
+  <li>The controller gets the nearest neighbors of the search query embedding from the <code class="language-plaintext highlighter-rouge">Embedding</code> model.</li>
+  <li>The controller gets the reviews matching the nearest neighbors.</li>
+  <li>The controller generates a response for the completions prompt using the <code class="language-plaintext highlighter-rouge">OpenAi::Chat</code> service, using the nearest neighbors as the system prompt.</li>
+</ol>
+
+<p>Then, create a view to display the search results:</p>
+
+<div class="language-erb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!-- app/views/reviews/index.html.erb --&gt;</span>
+<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"flex flex-col m-auto py-10 max-w-3xl"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"sticky top-0 flex flex-col bg-white p-5 rounded-md shadow-[0_3px_10px_rgb(0,0,0,0.2)]"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;h1</span> <span class="na">class=</span><span class="s">"text-5xl font-bold text-center bg-gradient-to-r from-blue-700 to-violet-700 inline-block text-transparent bg-clip-text max-w-max mx-auto pt-5"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;svg</span> <span class="na">xmlns=</span><span class="s">"http://www.w3.org/2000/svg"</span> <span class="na">fill=</span><span class="s">"none"</span> <span class="na">viewBox=</span><span class="s">"0 0 24 24"</span> <span class="na">stroke-width=</span><span class="s">"1.5"</span> <span class="na">stroke=</span><span class="s">"currentColor"</span> <span class="na">class=</span><span class="s">"inline-block h-10 w-10 text-blue-700"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;path</span> <span class="na">stroke-linecap=</span><span class="s">"round"</span> <span class="na">stroke-linejoin=</span><span class="s">"round"</span> <span class="na">d=</span><span class="s">"M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;/svg&gt;</span>
+      <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"AI Airline Review Search"</span><span class="p">,</span> <span class="n">root_path</span><span class="p">,</span> <span class="ss">class: </span><span class="s2">"hover:text-blue-700"</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;svg</span> <span class="na">xmlns=</span><span class="s">"http://www.w3.org/2000/svg"</span> <span class="na">fill=</span><span class="s">"none"</span> <span class="na">viewBox=</span><span class="s">"0 0 24 24"</span> <span class="na">stroke-width=</span><span class="s">"1.5"</span> <span class="na">stroke=</span><span class="s">"currentColor"</span> <span class="na">class=</span><span class="s">"inline-block h-10 w-10 text-violet-700"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;path</span> <span class="na">stroke-linecap=</span><span class="s">"round"</span> <span class="na">stroke-linejoin=</span><span class="s">"round"</span> <span class="na">d=</span><span class="s">"M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;/svg&gt;</span>
+    <span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"mt-10"</span><span class="nt">&gt;</span>
+      <span class="cp">&lt;%=</span> <span class="n">form_tag</span> <span class="n">reviews_path</span><span class="p">,</span> <span class="ss">method: :get</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"flex gap-x-2"</span><span class="nt">&gt;</span>
+          <span class="cp">&lt;%=</span> <span class="n">text_field_tag</span> <span class="ss">:query</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">],</span> <span class="ss">class: </span><span class="s2">"border border-gray-300 rounded-md p-2 grow"</span><span class="p">,</span> <span class="ss">autocomplete: </span><span class="s1">'off'</span> <span class="cp">%&gt;</span>
+
+          <span class="cp">&lt;%=</span> <span class="n">submit_tag</span> <span class="s2">"Search with AI!"</span><span class="p">,</span> <span class="ss">name: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">class: </span><span class="s2">"bg-blue-500 text-white p-2 rounded-md"</span> <span class="cp">%&gt;</span>
+          <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Clear"</span><span class="p">,</span> <span class="n">reviews_path</span><span class="p">,</span> <span class="ss">class: </span><span class="s2">"bg-gray-300 text-gray-800 p-2 rounded-md"</span> <span class="cp">%&gt;</span>
+        <span class="nt">&lt;/div&gt;</span>
+      <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@completions_response</span><span class="p">.</span><span class="nf">present?</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"mt-5 p-2 bg-gray-100 rounded-md"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@completions_response</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+      <span class="nt">&lt;/div&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@reviews</span><span class="p">.</span><span class="nf">any?</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"flex flex-col gap-y-2 mt-5"</span><span class="nt">&gt;</span>
+      <span class="cp">&lt;%</span> <span class="vi">@reviews</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">review</span><span class="o">|</span> <span class="cp">%&gt;</span>
+        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"flex flex-col gap-2 border border-gray-300 p-2 rounded-md"</span><span class="nt">&gt;</span>
+          <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"flex gap-x-1"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;strong&gt;</span>Airline:<span class="nt">&lt;/strong&gt;</span> <span class="nt">&lt;span&gt;</span><span class="cp">&lt;%=</span> <span class="n">review</span><span class="p">.</span><span class="nf">airline</span><span class="p">.</span><span class="nf">name</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;&lt;/span&gt;</span>
+          <span class="nt">&lt;/div&gt;</span>
+          <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"flex gap-x-1"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;strong&gt;</span>Title:<span class="nt">&lt;/strong&gt;</span> <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"truncate hover:text-clip"</span><span class="nt">&gt;</span><span class="cp">&lt;%=</span> <span class="n">review</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/span&gt;</span>
+          <span class="nt">&lt;/div&gt;</span>
+          <span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="n">review</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+        <span class="nt">&lt;/div&gt;</span>
+      <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre></div></div>
+
+<p>Finally, add a route to the search engine:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="n">resources</span> <span class="ss">:reviews</span><span class="p">,</span> <span class="ss">only: :index</span>
+  <span class="n">root</span> <span class="ss">to: </span><span class="s1">'reviews#index'</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now run the rails server and go to <code class="language-plaintext highlighter-rouge">http://localhost:3000</code> to see the search engine in action!</p>
+
+<p>You can find the full code for this tutorial in this <a href="https://github.com/juan-apa/Rails-Airline-Review-AI-Search">GitHub repository</a></p>
+
+<h1 id="demo">Demo</h1>
+<iframe width="560" height="420" src="/assets/videos/rails-ai-airline-reviews-search.mp4"></iframe>
+
+
+    </div>
+
+    <footer class="p-4 text-sm text-center mt-auto">
+  <ul class="flex justify-center gap-x-2">
+    <li class="">
+      <a href="https://twitter.com/not_kombustor" class="">Twitter (<span class="border-b border-solid border-neutral-200">@not_kombustor</span>)</a>
+    </li>
+    <vl class="border-r-2 dark:border-gray-700 border-gray-200"></vl>
+    <li class="">
+      <a href="https://github.com/juan-apa" class="">GitHub (<span class="border-b border-solid border-neutral-200">@juan-apa</span>)</a>
+    </li>
+  </ul>
+</footer>
+
+  </body>
+</html>
