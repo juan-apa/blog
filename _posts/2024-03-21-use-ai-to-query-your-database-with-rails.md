@@ -246,21 +246,19 @@ class OpenAi::Embeddings
     @api_key = api_key
   end
 
-  def self.get(text)
-    new(ENV["OPENAI_API_KEY"]).get(text)
+  def self.call(text)
+    new(ENV["OPENAI_API_KEY"]).call(text)
   end
 
-  def get(text)
+  def call(text)
     response = Net::HTTP.post(
-      "https://api.openai.com/v1/embeddings",
-      body: {
+      URI("https://api.openai.com/v1/embeddings"),
+      {
         input: text,
         model: "text-embedding-ada-002"
       }.to_json,
-      headers: {
-        "Authorization" => "Bearer #{@api_key}",
-        "Content-Type" => "application/json"
-      }
+      "Authorization" => "Bearer #{@api_key}",
+      "Content-Type" => "application/json"
     )
 
     JSON.parse(response.body)["data"].first["embedding"]
@@ -306,7 +304,7 @@ module Embeddable
   def create_embedding
     embedding = Embedding.create(
       embeddable: self,
-      vector: embedding_generator.get(embedding_text)
+      vector: embedding_generator.call(embedding_text)
     )
   end
 
@@ -328,7 +326,7 @@ end
 class SearchController < ApplicationController
   def index
     query = params[:query]
-    embedding = OpenAi::Embeddings.get(query)
+    embedding = OpenAi::Embeddings.call(query)
     embeddings = Embedding.nearest_neighbor(:vector, embedding, distance: 'cosine').limit(embeddings_limit)
     @results = embeddings.map(&:embeddable)
 
@@ -362,25 +360,24 @@ class OpenAi::Completions
     @api_key = api_key
   end
 
-  def self.ask(prompt, context: '')
-    new(ENV["OPENAI_API_KEY"]).ask(prompt, context: context)
+  def self.call(prompt, context: '')
+    new(ENV["OPENAI_API_KEY"]).call(prompt, context: context)
   end
 
-  def ask(prompt, context: '')
+  def call(prompt, **kwargs)
     messages = [{ role: 'user', content: prompt }]
-    messages << { role: 'assistant', content: context } if context.present?
+    kwargs.each do |role, content|
+      messages << { role:, content:}
+    end
 
     response = Net::HTTP.post(
-      "https://api.openai.com/v1/chat/completions",
-      body: {
+      URI("https://api.openai.com/v1/chat/completions"),
+      {
         model: "gpt-3.5-turbo",
-        prompt: prompt,
-        context: context
+        messages:
       }.to_json,
-      headers: {
-        "Authorization "=> "Bearer #{@api_key}",
-        "Content-Type" => "application/json"
-      }
+      "Authorization "=> "Bearer #{@api_key}",
+      "Content-Type" => "application/json"
     )
 
     JSON.parse(response.body)["choices"].first["message"]["content"]
@@ -408,7 +405,7 @@ class SearchController < ApplicationController
     context = generate_context(@results)
 
     # Ask OpenAI for a completion
-    @response = OpenAi::Completions.ask(query, context: context)
+    @response = OpenAi::Completions.call(query, system: context)
 
     respond_to do |format|
       # json response includes the results and the response
