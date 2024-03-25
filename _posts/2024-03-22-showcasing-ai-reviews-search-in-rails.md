@@ -338,6 +338,7 @@ class ReviewsController < ApplicationController
   def completions_response
     system = <<-PROMPT.gsub("\n", "  ")
     You are an AI that answers user submitted questions, based off of the reviews of airlines.
+    If you don't have enough information to answer the question, just respond with "I don't have enough information to answer that question."
     Here are the reviews:
       #{ @reviews.map { "- #{_1.airline.name}: #{_1.title}; {_1.body}" }}
     PROMPT
