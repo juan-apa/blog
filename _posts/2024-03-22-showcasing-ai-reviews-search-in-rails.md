@@ -3,7 +3,7 @@ layout: blog
 author: Juan Aparicio
 ---
 
-In my [previous post](/blog/2024-03-21-use-ai-to-query-your-database-with-rails) , I showcased a way to build an AI search engine using Ruby On Rails.
+In my [previous post](/2024/03/21/use-ai-to-query-your-database-with-rails.html) , I showcased a way to build an AI search engine using Ruby On Rails.
 In this post I'll be building a search engine for the [Airlines Reviews dataset](https://www.kaggle.com/datasets/sujalsuthar/airlines-reviews?resource=download) using the same approach.
 
 I'll guide you through the entire process, from cleaning-up the data, to seeding the database, and finally building the search engine UI.
