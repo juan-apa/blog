@@ -384,6 +384,7 @@ rails g model Embedding embedding:vector embeddable:references<span class="o">{<
   <span class="k">def</span> <span class="nf">completions_response</span>
     <span class="nb">system</span> <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">PROMPT</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"  "</span><span class="p">)</span><span class="sh">
     You are an AI that answers user submitted questions, based off of the reviews of airlines.
+    If you don't have enough information to answer the question, just respond with "I don't have enough information to answer that question."
     Here are the reviews:
       </span><span class="si">#{</span> <span class="vi">@reviews</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="s2">"- </span><span class="si">#{</span><span class="n">_1</span><span class="p">.</span><span class="nf">airline</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">_1</span><span class="p">.</span><span class="nf">title</span><span class="si">}</span><span class="s2">; {_1.body}"</span> <span class="si">}</span><span class="sh">}
 </span><span class="no">    PROMPT</span>
