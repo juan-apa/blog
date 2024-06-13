@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en-US" class="dark">
+  <head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SBCGMSPZRZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+
+  gtag('config', 'G-SBCGMSPZRZ');
+</script>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>Prest - Juan Aparicio</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/syntax-highlight.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+    <link rel="favicon" href="/assets/images/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+<link rel="manifest" href="/assets/site.webmanifest">
+
+    <meta property="og:title" content="Prest" />
+<meta property="og:description" content="A Ruby and Rails developer's blog" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://juan-apa.xyz/projects/prest/" />
+
+<!-- twitter og tags -->
+<meta property="twitter:domain" content="juan-apa.xyz">
+<meta property="twitter:url" content="https://juan-apa.xyz/projects/prest/">
+<meta name="twitter:title" content="Prest">
+<meta name="twitter:description" content="A Ruby and Rails developer's blog">
+<meta name="twitter:card" content="summary_large_image">
+
+    <meta property="og:image" content="https://juan-apa.xyz/assets/og_images/projects-prest.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+  </head>
+  <body class="dark:bg-neutral-800 dark:text-gray-100 bg-white text-gray-950 max-w-2xl m-auto font-mono min-h-screen flex flex-col">
+    <nav class="">
+  <ul class="flex p-4 h-full">
+    <li><a href="/" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2">Juan Aparicio</a></li>
+    <li class="grow"></li>
+    <li><a href="/open_source" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2 underline underline-neutral-200">Open Source</a></li>
+    <li><a href="/blog" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2 underline underline-neutral-200">Blog</a></li>
+  </ul>
+</nav>
+
+
+    <header class="flex flex-col items-center justify-center py-16">
+      <h1 class="text-4xl font-bold text-center">Prest</h1>
+
+      <a href="https://github.com/gogrow-dev/prest" class="text-neutral-200 text-lg mt-2 underline">https://github.com/gogrow-dev/prest</a>
+
+      
+        <p class="text-neutral-400 text-lg mt-2">An HTTParty wrapper for easier RESTful API consumption.</p>
+      
+
+    </header>
+
+
+    <div class="container mx-auto prose dark:prose-invert dark:text-gray-100 text-gray-950 pt-4 px-2 sm:px-0">
+      <p>This is really one of the first ruby projects I did with the sole purpose of trying some new things I learned while reading the book <a href="https://pragprog.com/titles/ppmetr2/metaprogramming-ruby-2/">“Metaprogramming Ruby 2”</a>.</p>
+
+<p>The idea behind the gem, was making a wrapper for the <a href="https://github.com/jnunemaker/httparty">HTTParty gem</a>, that would allow me to consume RESTful APIs in a more declarative way; just like I access <code class="language-plaintext highlighter-rouge">ActiveRecord</code> models in Rails.</p>
+
+<p>What does this look like then? Well, let’s say you have a RESTful API that has a <code class="language-plaintext highlighter-rouge">GET /users</code> endpoint. With <code class="language-plaintext highlighter-rouge">Prest</code>, you could do something like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># =&gt; GET https://api.example.com/users</span>
+<span class="no">Prest</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'https://api.example.com'</span><span class="p">).</span><span class="nf">users</span><span class="p">.</span><span class="nf">get!</span>
+
+<span class="c1"># =&gt; GET https://api.example.com/users/1</span>
+<span class="no">Prest</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'https://api.example.com'</span><span class="p">).</span><span class="nf">users</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">get!</span>
+
+<span class="c1"># =&gt; GET https://api.example.com/users/1/posts</span>
+<span class="no">Prest</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'https://api.example.com'</span><span class="p">).</span><span class="nf">users</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">posts</span><span class="p">.</span><span class="nf">get!</span>
+
+<span class="c1"># =&gt; POST https://api.example.com/users/1/posts</span>
+<span class="n">example_client</span> <span class="o">=</span> <span class="no">Prest</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'https://api.example.com'</span><span class="p">)</span>
+<span class="n">example_client</span><span class="p">.</span><span class="nf">users</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">posts</span><span class="p">.</span><span class="nf">post!</span><span class="p">(</span><span class="ss">body: </span><span class="p">{</span> <span class="ss">title: </span><span class="s1">'New Gem!'</span> <span class="p">})</span>
+</code></pre></div></div>
+
+<p>Besides providing a client, <code class="language-plaintext highlighter-rouge">Prest</code> also provides a <code class="language-plaintext highlighter-rouge">Prest::Service</code> so that endpoints can be encapsulated into a Client/Service class, and then used in a more Rails-like way.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Github::API</span> <span class="o">&lt;</span> <span class="no">Prest</span><span class="o">::</span><span class="no">Service</span>
+  <span class="k">def</span> <span class="nf">artifacts</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">)</span>
+    <span class="n">repos</span><span class="p">(</span><span class="n">owner</span><span class="p">).</span><span class="nf">repo</span><span class="p">(</span><span class="n">repo</span><span class="p">).</span><span class="nf">artifacts</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+  <span class="k">def</span> <span class="nf">base_uri</span>
+    <span class="s1">'https://api.github.com'</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">options</span>
+    <span class="p">{</span>
+      <span class="ss">headers: </span><span class="p">{</span>
+        <span class="s1">'access_token'</span> <span class="o">=&gt;</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'GITHUB_ACCESS_TOKEN'</span><span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># =&gt; GET https://api.github.com/users/juan-apa/pulls</span>
+<span class="no">Github</span><span class="o">::</span><span class="no">API</span><span class="p">.</span><span class="nf">users</span><span class="p">(</span><span class="s1">'juan-apa'</span><span class="p">).</span><span class="nf">pulls</span><span class="p">.</span><span class="nf">get</span>
+
+<span class="c1"># =&gt; GET https://api.github.com/users/juan-apa/repos</span>
+<span class="no">Github</span><span class="o">::</span><span class="no">API</span><span class="p">.</span><span class="nf">users</span><span class="p">(</span><span class="s1">'juan-apa'</span><span class="p">).</span><span class="nf">repos</span><span class="p">.</span><span class="nf">get</span>
+
+<span class="c1"># =&gt; GET https://api.github.com/repos/juan-apa/prest/actions/artifacts</span>
+<span class="no">Github</span><span class="o">::</span><span class="no">API</span><span class="p">.</span><span class="nf">artifacts</span><span class="p">(</span><span class="s1">'juan-apa'</span><span class="p">,</span> <span class="s1">'prest'</span><span class="p">).</span><span class="nf">get</span>
+</code></pre></div></div>
+
+    </div>
+
+    <footer class="p-4 text-sm text-center mt-auto flex flex-col">
+  <hr class="border-t-2 dark:border-gray-700 border-gray-200 sm:hidden">
+
+  <ul class="flex justify-center gap-x-2 flex-col sm:flex-row gap-2 w-full">
+    <li class="">
+      <a href="https://twitter.com/not_kombustor" class="hover:bg-neutral-700 px-2 py-1 h-full flex gap-1 justify-center items-center">
+        <span>Twitter</span><span class="border-b border-solid border-neutral-200">(@not_kombustor)</span></a>
+    </li>
+    <vl class="border-r-2 dark:border-gray-700 border-gray-200"></vl>
+    <li class="">
+      <a href="https://github.com/juan-apa" class="hover:bg-neutral-700 px-2 py-1 h-full flex gap-1 justify-center items-center">
+        <span>GitHub</span><span class="border-b border-solid border-neutral-200">(@juan-apa)</span></a>
+    </li>
+    <vl class="border-r-2 dark:border-gray-700 border-gray-200"></vl>
+    <li class="">
+      <a href="https://linkedin.com/in/juan-s-apa" class="hover:bg-neutral-700 px-2 py-1 h-full flex gap-1 justify-center items-center">
+        <span>LinkedIn</span><span class="border-b border-solid border-neutral-200">(@juan-apa)</span></a>
+    </li>
+  </ul>
+</footer>
+
+  </body>
+</html>

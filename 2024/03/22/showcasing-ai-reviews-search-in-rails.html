@@ -49,6 +49,7 @@
   <ul class="flex p-4 h-full">
     <li><a href="/" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2">Juan Aparicio</a></li>
     <li class="grow"></li>
+    <li><a href="/open_source" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2 underline underline-neutral-200">Open Source</a></li>
     <li><a href="/blog" class="text-lg font-bold hover:dark:bg-neutral-700 px-4 py-2 underline underline-neutral-200">Blog</a></li>
   </ul>
 </nav>
@@ -469,14 +470,23 @@ rails g model Embedding embedding:vector embeddable:references<span class="o">{<
 
     </div>
 
-    <footer class="p-4 text-sm text-center mt-auto">
-  <ul class="flex justify-center gap-x-2">
+    <footer class="p-4 text-sm text-center mt-auto flex flex-col">
+  <hr class="border-t-2 dark:border-gray-700 border-gray-200 sm:hidden">
+
+  <ul class="flex justify-center gap-x-2 flex-col sm:flex-row gap-2 w-full">
     <li class="">
-      <a href="https://twitter.com/not_kombustor" class="">Twitter (<span class="border-b border-solid border-neutral-200">@not_kombustor</span>)</a>
+      <a href="https://twitter.com/not_kombustor" class="hover:bg-neutral-700 px-2 py-1 h-full flex gap-1 justify-center items-center">
+        <span>Twitter</span><span class="border-b border-solid border-neutral-200">(@not_kombustor)</span></a>
     </li>
     <vl class="border-r-2 dark:border-gray-700 border-gray-200"></vl>
     <li class="">
-      <a href="https://github.com/juan-apa" class="">GitHub (<span class="border-b border-solid border-neutral-200">@juan-apa</span>)</a>
+      <a href="https://github.com/juan-apa" class="hover:bg-neutral-700 px-2 py-1 h-full flex gap-1 justify-center items-center">
+        <span>GitHub</span><span class="border-b border-solid border-neutral-200">(@juan-apa)</span></a>
+    </li>
+    <vl class="border-r-2 dark:border-gray-700 border-gray-200"></vl>
+    <li class="">
+      <a href="https://linkedin.com/in/juan-s-apa" class="hover:bg-neutral-700 px-2 py-1 h-full flex gap-1 justify-center items-center">
+        <span>LinkedIn</span><span class="border-b border-solid border-neutral-200">(@juan-apa)</span></a>
     </li>
   </ul>
 </footer>
