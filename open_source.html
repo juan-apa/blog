@@ -1,0 +1,22 @@
+---
+layout: default
+title: Open Source
+---
+
+<div class="w-full">
+  <ul class="flex justify-center flex flex-col divide-y divide-neutral-300 dark:divide-neutral-700">
+    <li class="flex justify-center flex flex-row w-full">
+      <span class="px-4 py-2 font-extralight grow">category</span>
+      <span class="px-4 py-2 font-extralight grow">title</span>
+
+    </li>
+    {% for project in site.projects %}
+    <li class="w-full">
+      <a href="{{ project.url }}" class="flex justify-center flex flex-row hover:dark:bg-neutral-700">
+        <span class="px-4 py-2 w-1/5 min-w-[8.1rem]">{{ project.category }}</span>
+        <span class="px-4 py-2 grow">{{ project.title }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

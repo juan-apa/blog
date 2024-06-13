@@ -14,10 +14,15 @@ module OgImages
     def generate(site)
       # Get the posts
       posts = site.posts.docs
+      projects = site.collections['projects'].docs
 
       # Generate an og-image for each post
       posts.each do |post|
         generate_og_image(post)
+      end
+
+      projects.each do |project|
+        generate_og_image(project)
       end
     end
 

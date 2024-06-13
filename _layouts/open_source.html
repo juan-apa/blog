@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}" class="dark">
+  <head>
+    {% include google_analytics_head.html %}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>{{ page.title }} - {{ site.title }}</title>
+    <link rel="stylesheet" href="{{ "/assets/css/main.css" | relative_url }}">
+    <link rel="stylesheet" href="{{ "/assets/css/syntax-highlight.css" | relative_url }}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+    {% include favicon.html %}
+    {% include og.html %}
+    {% og_image %}
+  </head>
+  <body class="dark:bg-neutral-800 dark:text-gray-100 bg-white text-gray-950 max-w-2xl m-auto font-mono min-h-screen flex flex-col">
+    {% include navbar.html %}
+
+    <header class="flex flex-col items-center justify-center py-16">
+      <h1 class="text-4xl font-bold text-center">{{ page.title }}</h1>
+
+      <a href="{{ page.github_url }}" class="text-neutral-200 text-lg mt-2 underline">{{ page.github_url }}</a>
+
+      {% if page.short_description %}
+        <p class="text-neutral-400 text-lg mt-2">{{ page.short_description }}</p>
+      {% endif %}
+
+    </header>
+
+
+    <div class="container mx-auto prose dark:prose-invert dark:text-gray-100 text-gray-950 pt-4 px-2 sm:px-0">
+      {{ content }}
+    </div>
+
+    {% include footer.html %}
+  </body>
+</html>
