@@ -7,7 +7,7 @@ description: "A Ruby and Rails developer's blog"
 twitter_username: "not_kombustor"
 github_username: "juan-apa"
 linkedin_username: "juan-s-apa"
-github_repo: "juan-apa/juan-apa.github.io"
+github_repo: "juan-apa/blog"
 og_image: "/assets/images/og-image.png"
 
 collections:
